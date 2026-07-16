@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>FAHAD MD - Dashboard</title>
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<div id="login-screen" class="screen">
+  <div class="card">
+    <h1>🤖 FAHAD MD</h1>
+    <p class="sub">Dashboard Login</p>
+    <input type="password" id="password" placeholder="Dashboard Password" />
+    <button onclick="login()">Login</button>
+    <p id="login-error" class="error"></p>
+  </div>
+</div>
+
+<div id="app-screen" class="screen hidden">
+  <header>
+    <h1>🤖 FAHAD MD <span id="status-badge" class="badge">•</span></h1>
+    <button class="ghost" onclick="logout()">Logout</button>
+  </header>
+
+  <nav class="tabs">
+    <button class="tab-btn active" data-tab="link">Link Device</button>
+    <button class="tab-btn" data-tab="settings">Settings</button>
+    <button class="tab-btn" data-tab="forward">Auto Forward</button>
+  </nav>
+
+  <section id="tab-link" class="tab-content">
+    <div class="card">
+      <h2>Link Device</h2>
+      <div class="linkmode-switch">
+        <button id="btn-qr-mode" class="pill active" onclick="switchLinkMode('qr')">QR Code</button>
+        <button id="btn-pair-mode" class="pill" onclick="switchLinkMode('pair')">Pair Code</button>
+      </div>
+
+      <div id="qr-box">
+        <p class="hint">Open WhatsApp → Linked Devices → Link a device, then scan:</p>
+        <div id="qr-image">Loading...</div>
+      </div>
+
+      <div id="pair-box" class="hidden">
+        <p class="hint">Enter your WhatsApp number with country code (no + or spaces):</p>
+        <input type="text" id="pair-phone" placeholder="923014875344" />
+        <button onclick="requestPair()">Get Pairing Code</button>
+        <div id="pair-code-box"></div>
+      </div>
+
+      <button class="danger" onclick="relink()">🔄 Unlink / Reset Session</button>
+    </div>
+  </section>
+
+  <section id="tab-settings" class="tab-content hidden">
+    <div class="card">
+      <h2>Bot Settings</h2>
+      <label>Bot Name</label>
+      <input id="s-botName" type="text" />
+
+      <label>Command Prefix</label>
+      <input id="s-prefix" type="text" maxlength="2" />
+
+      <label>Mode</label>
+      <select id="s-mode">
+        <option value="public">Public (anyone can use)</option>
+        <option value="private">Private (owner only)</option>
+      </select>
+
+      <label>Owner Numbers (comma separated)</label>
+      <input id="s-owners" type="text" />
+
+      <label>Support Number</label>
+      <input id="s-support" type="text" />
+
+      <div class="toggle-row"><span>Anti-Delete</span><input type="checkbox" id="s-antidelete" /></div>
+      <div class="toggle-row"><span>Anti-ViewOnce</span><input type="checkbox" id="s-antiviewonce" /></div>
+      <div class="toggle-row"><span>Auto Status View</span><input type="checkbox" id="s-autostatusview" /></div>
+      <div class="toggle-row"><span>Auto Status React</span><input type="checkbox" id="s-autostatusreact" /></div>
+      <div class="toggle-row"><span>Welcome Messages</span><input type="checkbox" id="s-welcome" /></div>
+
+      <button onclick="saveSettings()">💾 Save Settings</button>
+      <p id="settings-msg" class="hint"></p>
+    </div>
+  </section>
+
+  <section id="tab-forward" class="tab-content hidden">
+    <div class="card">
+      <h2>Auto Forward</h2>
+      <div class="toggle-row"><span>Enable Auto Forward</span><input type="checkbox" id="f-enabled" /></div>
+      <div class="toggle-row"><span>Make forwarded content look original</span><input type="checkbox" id="f-original" /></div>
+
+      <label>Source Chats (JIDs, comma separated, empty = all chats)</label>
+      <textarea id="f-sources" placeholder="120363xxxxx@g.us, 92300xxxxxx@s.whatsapp.net"></textarea>
+
+      <label>Target Groups (JIDs, comma separated)</label>
+      <textarea id="f-targets" placeholder="120363xxxxx@g.us"></textarea>
+
+      <p class="hint">Tip: use the <code>.getid</code> command inside a group to get its JID.</p>
+      <button onclick="saveForward()">💾 Save Auto Forward Settings</button>
+      <p id="forward-msg" class="hint"></p>
+    </div>
+  </section>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
