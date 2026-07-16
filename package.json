@@ -1,0 +1,28 @@
+{
+  "name": "fahad-md",
+  "version": "1.0.0",
+  "description": "FAHAD MD - Professional WhatsApp Bot (Baileys) with MongoDB session store, QR + Pair linking, Web Dashboard, Plugin system, Auto-Forward (originality mode), Group/User/Status management",
+  "main": "index.js",
+  "engines": {
+    "node": ">=18.x"
+  },
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js"
+  },
+  "author": "FAHAD MD",
+  "license": "MIT",
+  "dependencies": {
+    "@whiskeysockets/baileys": "^6.7.9",
+    "express": "^4.19.2",
+    "mongoose": "^8.5.1",
+    "qrcode": "^1.5.3",
+    "pino": "^9.3.2",
+    "dotenv": "^16.4.5",
+    "body-parser": "^1.20.2",
+    "cookie-parser": "^1.4.6",
+    "node-cache": "^5.1.2",
+    "moment-timezone": "^0.5.45",
+    "chalk": "^4.1.2"
+  }
+}

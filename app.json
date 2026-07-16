@@ -1,0 +1,50 @@
+{
+  "name": "FAHAD MD",
+  "description": "Professional WhatsApp Bot powered by Baileys with MongoDB session store, QR + Pair Code linking, Web Dashboard, Plugin system, Auto-Forward and more.",
+  "repository": "https://github.com/YOUR_USERNAME/fahad-md",
+  "logo": "https://i.ibb.co/0j0j0j0/whatsapp-bot.png",
+  "keywords": ["whatsapp", "bot", "baileys", "nodejs", "mongodb"],
+  "env": {
+    "MONGODB_URI": {
+      "description": "MongoDB connection string used to store the WhatsApp session, settings, users and groups.",
+      "required": true
+    },
+    "DASHBOARD_PASSWORD": {
+      "description": "Password to access the web dashboard (used to link device via QR/Pair and change settings).",
+      "value": "change_this_password"
+    },
+    "OWNER_NUMBER": {
+      "description": "Bot owner WhatsApp number with country code, digits only, e.g. 923014875344",
+      "value": "923014875344"
+    },
+    "SUPPORT_NUMBER": {
+      "description": "Support contact number shown in the bot menu.",
+      "value": "03014875344"
+    },
+    "BOT_NAME": {
+      "description": "Name of the bot shown in menus and browser pairing.",
+      "value": "FAHAD MD"
+    },
+    "PREFIX": {
+      "description": "Default command prefix.",
+      "value": "."
+    },
+    "SESSION_ID": {
+      "description": "Unique session id, lets you run multiple bot instances on one MongoDB database.",
+      "value": "fahad-md-main"
+    },
+    "BOT_MODE": {
+      "description": "public or private",
+      "value": "public"
+    }
+  },
+  "formation": {
+    "web": {
+      "quantity": 1,
+      "size": "basic"
+    }
+  },
+  "buildpacks": [
+    { "url": "heroku/nodejs" }
+  ]
+}
