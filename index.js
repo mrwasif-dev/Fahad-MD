@@ -49,22 +49,27 @@ async function startBot() {
   state.sock = sock;
   sock.clearSession = clearSession;
 
-  // ----- Pairing code flow (triggered from web dashboard) -----
+  // ----- Pairing code flow (triggered instantly from web dashboard) -----
   sock.ev.on('creds.update', saveCreds);
 
-  // poll for a pairing request coming from the dashboard
-  const pairPoller = setInterval(async () => {
-    if (state.requestedPairPhone && !authState.creds.registered && sock.user == null) {
-      try {
-        const code = await sock.requestPairingCode(state.requestedPairPhone);
-        state.pairingCode = code;
-        console.log(chalk.green(`🔗 Pairing code for ${state.requestedPairPhone}: ${code}`));
-      } catch (e) {
-        console.error('Pairing code error:', e.message);
+  const onPairRequest = async (phone) => {
+    try {
+      if (sock.authState.creds.registered) {
+        state.pairingError = 'Device is already linked. Unlink first to request a new pairing code.';
+        return;
       }
-      state.requestedPairPhone = null;
+      // small delay avoids racing the initial QR generation right after socket creation
+      await new Promise((r) => setTimeout(r, 1500));
+      const code = await sock.requestPairingCode(phone);
+      state.pairingCode = code;
+      state.pairingError = null;
+      console.log(chalk.green(`🔗 Pairing code for ${phone}: ${code}`));
+    } catch (e) {
+      state.pairingError = e.message || 'Failed to generate pairing code. Try again.';
+      console.error('Pairing code error:', e.message);
     }
-  }, 2000);
+  };
+  state.on('pair-request', onPairRequest);
 
   sock.ev.on('connection.update', async (update) => {
     const { connection, lastDisconnect, qr } = update;
@@ -78,14 +83,17 @@ async function startBot() {
     if (connection === 'open') {
       state.qrDataURL = null;
       state.pairingCode = null;
+      state.pairingError = null;
+      state.lastError = null;
       console.log(chalk.green(`✅ ${config.BOT_NAME} connected as ${sock.user?.id}`));
     }
 
     if (connection === 'close') {
-      clearInterval(pairPoller);
+      state.off('pair-request', onPairRequest);
       const statusCode = lastDisconnect?.error?.output?.statusCode;
       const loggedOut = statusCode === DisconnectReason.loggedOut;
-      console.log(chalk.red(`⚠️ Connection closed. Reason: ${statusCode || 'unknown'}`));
+      state.lastError = lastDisconnect?.error?.message || `Connection closed (code ${statusCode || 'unknown'})`;
+      console.log(chalk.red(`⚠️ Connection closed. Reason: ${statusCode || 'unknown'} — ${state.lastError}`));
       if (loggedOut) {
         console.log(chalk.yellow('🔴 Logged out. Clearing session, please re-link via dashboard.'));
         await clearSession();
@@ -258,7 +266,20 @@ async function handleMessage(sock, raw) {
   }
 }
 
+function printBanner() {
+  const line = '═'.repeat(46);
+  console.log(chalk.green(`╔${line}╗`));
+  console.log(chalk.green('║') + chalk.bold.white(`   🤖  ${config.BOT_NAME} — Professional WhatsApp Bot   `.padEnd(46)) + chalk.green('║'));
+  console.log(chalk.green(`╠${line}╣`));
+  console.log(chalk.green('║') + chalk.gray(`   Engine     : Baileys (Multi-Device)`.padEnd(46)) + chalk.green('║'));
+  console.log(chalk.green('║') + chalk.gray(`   Database   : MongoDB`.padEnd(46)) + chalk.green('║'));
+  console.log(chalk.green('║') + chalk.gray(`   Mode       : ${config.BOT_MODE}`.padEnd(46)) + chalk.green('║'));
+  console.log(chalk.green('║') + chalk.gray(`   Support    : ${config.SUPPORT_NUMBER}`.padEnd(46)) + chalk.green('║'));
+  console.log(chalk.green(`╚${line}╝`));
+}
+
 async function main() {
+  printBanner();
   console.log(chalk.cyan(`🚀 Starting ${config.BOT_NAME}...`));
   await connectDB();
 

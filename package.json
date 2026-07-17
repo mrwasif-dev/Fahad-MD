@@ -13,7 +13,7 @@
   "author": "FAHAD MD",
   "license": "MIT",
   "dependencies": {
-    "@whiskeysockets/baileys": "^6.7.9",
+    "@whiskeysockets/baileys": "6.7.9",
     "express": "^4.19.2",
     "mongoose": "^8.5.1",
     "qrcode": "^1.5.3",
