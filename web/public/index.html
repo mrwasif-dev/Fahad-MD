@@ -2,108 +2,202 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>FAHAD MD - Dashboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+<title>FAHAD MD — Relay Console</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
+<!-- ambient background -->
+<div class="bg-orbs" aria-hidden="true">
+  <span class="orb orb-a"></span>
+  <span class="orb orb-b"></span>
+  <span class="orb orb-c"></span>
+  <div class="bg-grid"></div>
+</div>
+
+<!-- reusable signal glyph -->
+<template id="signal-glyph">
+  <svg viewBox="0 0 48 48" class="signal-glyph" fill="none">
+    <circle class="sg-dot" cx="24" cy="24" r="4" fill="currentColor"/>
+    <path class="sg-arc sg-arc-1" d="M17 24a7 7 0 0 1 7-7" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+    <path class="sg-arc sg-arc-1" d="M31 24a7 7 0 0 1-7 7" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+    <path class="sg-arc sg-arc-2" d="M11 24a13 13 0 0 1 13-13" stroke="currentColor" stroke-width="3" stroke-linecap="round" opacity="0.6"/>
+    <path class="sg-arc sg-arc-2" d="M37 24a13 13 0 0 1-13 13" stroke="currentColor" stroke-width="3" stroke-linecap="round" opacity="0.6"/>
+    <path class="sg-arc sg-arc-3" d="M5 24a19 19 0 0 1 19-19" stroke="currentColor" stroke-width="3" stroke-linecap="round" opacity="0.3"/>
+    <path class="sg-arc sg-arc-3" d="M43 24a19 19 0 0 1-19 19" stroke="currentColor" stroke-width="3" stroke-linecap="round" opacity="0.3"/>
+  </svg>
+</template>
+
+<!-- ===== Login Screen ===== -->
 <div id="login-screen" class="screen">
-  <div class="card">
-    <h1>🤖 FAHAD MD</h1>
-    <p class="sub">Dashboard Login</p>
-    <input type="password" id="password" placeholder="Dashboard Password" />
-    <button onclick="login()">Login</button>
+  <div class="login-card reveal">
+    <div class="brand">
+      <div class="brand-mark" id="brand-mark-login"></div>
+      <h1>FAHAD MD</h1>
+      <p class="eyebrow">RELAY CONSOLE</p>
+    </div>
+    <div class="field">
+      <label>Access Key</label>
+      <input type="password" id="password" placeholder="Dashboard password" onkeydown="if(event.key==='Enter')login()" autofocus />
+    </div>
+    <button class="btn primary full" onclick="login()">
+      <span id="login-btn-text">Unlock Console</span>
+    </button>
     <p id="login-error" class="error"></p>
   </div>
 </div>
 
+<!-- ===== App Screen ===== -->
 <div id="app-screen" class="screen hidden">
-  <header>
-    <h1>🤖 FAHAD MD <span id="status-badge" class="badge">•</span></h1>
-    <button class="ghost" onclick="logout()">Logout</button>
+
+  <header class="topbar reveal">
+    <div class="topbar-left">
+      <div class="brand-mark small" id="brand-mark-top"></div>
+      <div>
+        <h1>FAHAD MD</h1>
+        <div id="status-badge" class="signal-status">
+          <span class="pulse-dot"></span>
+          <span id="status-text">Checking signal…</span>
+        </div>
+      </div>
+    </div>
+    <button class="btn ghost small" onclick="logout()">Sign out</button>
   </header>
 
-  <nav class="tabs">
-    <button class="tab-btn active" data-tab="link">Link Device</button>
-    <button class="tab-btn" data-tab="settings">Settings</button>
-    <button class="tab-btn" data-tab="forward">Auto Forward</button>
-  </nav>
+  <div class="layout">
+    <nav class="nav" id="main-nav">
+      <div class="nav-indicator" id="nav-indicator"></div>
+      <button class="nav-btn active" data-tab="link"><span class="nav-icon">◈</span><span>Link Device</span></button>
+      <button class="nav-btn" data-tab="settings"><span class="nav-icon">⚙</span><span>Settings</span></button>
+      <button class="nav-btn" data-tab="forward"><span class="nav-icon">⇄</span><span>Auto Forward</span></button>
+    </nav>
 
-  <section id="tab-link" class="tab-content">
-    <div class="card">
-      <h2>Link Device</h2>
-      <div class="linkmode-switch">
-        <button id="btn-qr-mode" class="pill active" onclick="switchLinkMode('qr')">QR Code</button>
-        <button id="btn-pair-mode" class="pill" onclick="switchLinkMode('pair')">Pair Code</button>
-      </div>
+    <main class="content">
 
-      <div id="qr-box">
-        <p class="hint">Open WhatsApp → Linked Devices → Link a device, then scan:</p>
-        <div id="qr-image">Loading...</div>
-      </div>
+      <!-- LINK DEVICE -->
+      <section id="tab-link" class="tab-panel">
+        <div class="card reveal">
+          <div class="card-head">
+            <span class="eyebrow">STEP 01</span>
+            <h2>Link Your Device</h2>
+          </div>
+          <p id="already-linked" class="status-chip hidden">✓ Device linked and active</p>
 
-      <div id="pair-box" class="hidden">
-        <p class="hint">Enter your WhatsApp number with country code (no + or spaces):</p>
-        <input type="text" id="pair-phone" placeholder="923014875344" />
-        <button onclick="requestPair()">Get Pairing Code</button>
-        <div id="pair-code-box"></div>
-      </div>
+          <div class="segmented">
+            <div class="seg-indicator" id="seg-indicator"></div>
+            <button id="btn-qr-mode" class="seg-btn active" onclick="switchLinkMode('qr')">QR Code</button>
+            <button id="btn-pair-mode" class="seg-btn" onclick="switchLinkMode('pair')">Pairing Code</button>
+          </div>
 
-      <button class="danger" onclick="relink()">🔄 Unlink / Reset Session</button>
-    </div>
-  </section>
+          <div id="qr-box" class="link-box">
+            <p class="hint">Open WhatsApp → Linked Devices → Link a device, then scan:</p>
+            <div id="qr-image" class="qr-frame">
+              <div class="scanline"></div>
+              <span class="corner tl"></span><span class="corner tr"></span>
+              <span class="corner bl"></span><span class="corner br"></span>
+              <div class="spinner"></div>
+            </div>
+          </div>
 
-  <section id="tab-settings" class="tab-content hidden">
-    <div class="card">
-      <h2>Bot Settings</h2>
-      <label>Bot Name</label>
-      <input id="s-botName" type="text" />
+          <div id="pair-box" class="link-box hidden">
+            <p class="hint">Enter your WhatsApp number with country code (digits only):</p>
+            <div class="field">
+              <input type="text" id="pair-phone" placeholder="e.g. 923014875344" inputmode="numeric" />
+            </div>
+            <button class="btn primary full" onclick="requestPair()">Generate Pairing Code</button>
+            <div id="pair-code-box" class="pair-code hidden"></div>
+            <p id="pair-error" class="error"></p>
+          </div>
 
-      <label>Command Prefix</label>
-      <input id="s-prefix" type="text" maxlength="2" />
+          <button class="btn danger full" onclick="relink()">↺ Unlink / Reset Session</button>
+        </div>
+      </section>
 
-      <label>Mode</label>
-      <select id="s-mode">
-        <option value="public">Public (anyone can use)</option>
-        <option value="private">Private (owner only)</option>
-      </select>
+      <!-- SETTINGS -->
+      <section id="tab-settings" class="tab-panel hidden">
+        <div class="card reveal">
+          <div class="card-head">
+            <span class="eyebrow">STEP 02</span>
+            <h2>Bot Settings</h2>
+          </div>
 
-      <label>Owner Numbers (comma separated)</label>
-      <input id="s-owners" type="text" />
+          <div class="field">
+            <label>Bot Name</label>
+            <input id="s-botName" type="text" />
+          </div>
 
-      <label>Support Number</label>
-      <input id="s-support" type="text" />
+          <div class="field">
+            <label>Command Prefix</label>
+            <input id="s-prefix" type="text" maxlength="2" class="mono" />
+          </div>
 
-      <div class="toggle-row"><span>Anti-Delete</span><input type="checkbox" id="s-antidelete" /></div>
-      <div class="toggle-row"><span>Anti-ViewOnce</span><input type="checkbox" id="s-antiviewonce" /></div>
-      <div class="toggle-row"><span>Auto Status View</span><input type="checkbox" id="s-autostatusview" /></div>
-      <div class="toggle-row"><span>Auto Status React</span><input type="checkbox" id="s-autostatusreact" /></div>
-      <div class="toggle-row"><span>Welcome Messages</span><input type="checkbox" id="s-welcome" /></div>
+          <div class="field">
+            <label>Mode</label>
+            <select id="s-mode">
+              <option value="public">Public — anyone can use commands</option>
+              <option value="private">Private — owner only</option>
+            </select>
+          </div>
 
-      <button onclick="saveSettings()">💾 Save Settings</button>
-      <p id="settings-msg" class="hint"></p>
-    </div>
-  </section>
+          <div class="field">
+            <label>Owner Numbers</label>
+            <input id="s-owners" type="text" class="mono" placeholder="923014875344" />
+          </div>
 
-  <section id="tab-forward" class="tab-content hidden">
-    <div class="card">
-      <h2>Auto Forward</h2>
-      <div class="toggle-row"><span>Enable Auto Forward</span><input type="checkbox" id="f-enabled" /></div>
-      <div class="toggle-row"><span>Make forwarded content look original</span><input type="checkbox" id="f-original" /></div>
+          <div class="field">
+            <label>Support Number</label>
+            <input id="s-support" type="text" class="mono" />
+          </div>
 
-      <label>Source Chats (JIDs, comma separated, empty = all chats)</label>
-      <textarea id="f-sources" placeholder="120363xxxxx@g.us, 92300xxxxxx@s.whatsapp.net"></textarea>
+          <div class="toggle-group">
+            <div class="toggle-row"><span>Anti-Delete</span><label class="switch"><input type="checkbox" id="s-antidelete" /><span class="slider"></span></label></div>
+            <div class="toggle-row"><span>Anti-ViewOnce</span><label class="switch"><input type="checkbox" id="s-antiviewonce" /><span class="slider"></span></label></div>
+            <div class="toggle-row"><span>Auto Status View</span><label class="switch"><input type="checkbox" id="s-autostatusview" /><span class="slider"></span></label></div>
+            <div class="toggle-row"><span>Auto Status React</span><label class="switch"><input type="checkbox" id="s-autostatusreact" /><span class="slider"></span></label></div>
+            <div class="toggle-row"><span>Welcome Messages</span><label class="switch"><input type="checkbox" id="s-welcome" /><span class="slider"></span></label></div>
+          </div>
 
-      <label>Target Groups (JIDs, comma separated)</label>
-      <textarea id="f-targets" placeholder="120363xxxxx@g.us"></textarea>
+          <button class="btn primary full" onclick="saveSettings()">Save Settings</button>
+        </div>
+      </section>
 
-      <p class="hint">Tip: use the <code>.getid</code> command inside a group to get its JID.</p>
-      <button onclick="saveForward()">💾 Save Auto Forward Settings</button>
-      <p id="forward-msg" class="hint"></p>
-    </div>
-  </section>
+      <!-- AUTO FORWARD -->
+      <section id="tab-forward" class="tab-panel hidden">
+        <div class="card reveal">
+          <div class="card-head">
+            <span class="eyebrow">STEP 03</span>
+            <h2>Auto Forward</h2>
+          </div>
+
+          <div class="toggle-group">
+            <div class="toggle-row"><span>Enable Auto Forward</span><label class="switch"><input type="checkbox" id="f-enabled" /><span class="slider"></span></label></div>
+            <div class="toggle-row"><span>Make forwarded content original</span><label class="switch"><input type="checkbox" id="f-original" /><span class="slider"></span></label></div>
+          </div>
+
+          <div class="field">
+            <label>Source Chats <span class="label-note">(JIDs, comma separated — empty = all chats)</span></label>
+            <textarea id="f-sources" class="mono" placeholder="120363xxxxx@g.us, 92300xxxxxx@s.whatsapp.net"></textarea>
+          </div>
+
+          <div class="field">
+            <label>Target Groups <span class="label-note">(JIDs, comma separated)</span></label>
+            <textarea id="f-targets" class="mono" placeholder="120363xxxxx@g.us"></textarea>
+          </div>
+
+          <p class="hint">💡 Send <code>.getid</code> inside any chat/group to get its JID.</p>
+          <button class="btn primary full" onclick="saveForward()">Save Auto Forward Settings</button>
+        </div>
+      </section>
+
+    </main>
+  </div>
 </div>
+
+<div id="toast" class="toast hidden"></div>
 
 <script src="app.js"></script>
 </body>
