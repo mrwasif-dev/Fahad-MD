@@ -29,6 +29,8 @@ function cacheMessage(m) {
 }
 
 let commandMap, allPlugins;
+let reconnectTimer = null;
+let reconnectAttempts = 0;
 
 async function startBot() {
   const { state: authState, saveCreds, clearSession } = await useMongoAuthState(config.SESSION_ID);
@@ -54,6 +56,7 @@ async function startBot() {
 
   const onPairRequest = async (phone) => {
     try {
+      if (state.sock !== sock) return; // stale socket, ignore
       if (sock.authState.creds.registered) {
         state.pairingError = 'Device is already linked. Unlink first to request a new pairing code.';
         return;
@@ -72,6 +75,11 @@ async function startBot() {
   state.on('pair-request', onPairRequest);
 
   sock.ev.on('connection.update', async (update) => {
+    // Ignore events from a socket that has already been superseded by a newer
+    // instance — this is what previously caused overlapping reconnect loops
+    // (two sockets fighting over the same session -> repeated 408/401 crashes).
+    if (state.sock !== sock) return;
+
     const { connection, lastDisconnect, qr } = update;
 
     if (qr) {
@@ -85,6 +93,7 @@ async function startBot() {
       state.pairingCode = null;
       state.pairingError = null;
       state.lastError = null;
+      reconnectAttempts = 0;
       console.log(chalk.green(`✅ ${config.BOT_NAME} connected as ${sock.user?.id}`));
     }
 
@@ -97,8 +106,22 @@ async function startBot() {
       if (loggedOut) {
         console.log(chalk.yellow('🔴 Logged out. Clearing session, please re-link via dashboard.'));
         await clearSession();
+        reconnectAttempts = 0; // fresh start deserves a fresh, fast retry
       }
-      setTimeout(() => startBot(), 3000);
+
+      // Only ONE reconnect timer may ever be scheduled at a time. Without this
+      // guard, a burst of close events (e.g. QR-timeout immediately followed by
+      // a stream error) could each schedule their own startBot(), producing two
+      // or more live sockets fighting over the same WhatsApp session — which is
+      // exactly what produced the repeating 408 → 401 crash loop.
+      if (reconnectTimer) return;
+      reconnectAttempts++;
+      const delay = Math.min(3000 * reconnectAttempts, 30000); // capped exponential backoff
+      console.log(chalk.yellow(`⏳ Reconnecting in ${Math.round(delay / 1000)}s (attempt ${reconnectAttempts})...`));
+      reconnectTimer = setTimeout(() => {
+        reconnectTimer = null;
+        startBot();
+      }, delay);
     }
   });
 
