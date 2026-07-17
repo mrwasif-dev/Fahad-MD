@@ -5,8 +5,8 @@ module.exports = {
   description: 'Check bot response speed',
   execute: async (sock, m) => {
     const start = Date.now();
-    const sent = await m.reply('🏓 Pinging...');
+    await sock.sendMessage(m.chat, { text: '🏓 Pinging...' }, { quoted: m.raw });
     const speed = Date.now() - start;
-    await sock.sendMessage(m.chat, { text: `🏓 Pong! *${speed}ms*`, edit: sent.key });
+    await m.reply(`🏓 Pong! *${speed}ms*`);
   }
 };
